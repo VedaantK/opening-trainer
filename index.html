@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Learn chess openings by playing them, with spaced repetition and real-game stats." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♞</text></svg>" />
+    <title>Opening Trainer</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>♞ Opening Trainer</h1>
+      <select id="repertoire-select" aria-label="Choose a repertoire"></select>
+    </header>
+
+    <main class="layout">
+      <section class="board-col">
+        <div id="board" class="board"></div>
+        <div class="controls">
+          <button id="next-btn" class="primary">Next line</button>
+          <button id="hint-btn">Hint</button>
+          <button id="restart-btn">Restart line</button>
+        </div>
+      </section>
+
+      <aside class="side-col">
+        <div class="card">
+          <div id="line-name" class="line-name">Pick a line to start</div>
+          <div id="status" class="status" role="status" aria-live="polite"></div>
+          <div id="note" class="note" hidden></div>
+          <ol id="move-list" class="move-list"></ol>
+        </div>
+
+        <details class="card" id="stats-card">
+          <summary>Real-game stats for this position</summary>
+          <div id="stats" class="stats"><p class="muted">Open to load stats from Lichess.</p></div>
+        </details>
+
+        <div class="card">
+          <h2>Your lines</h2>
+          <ul id="line-list" class="line-list"></ul>
+          <p id="progress-error" class="muted" hidden></p>
+        </div>
+      </aside>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "id": "caro-kann-black",
+  "name": "1.e4 c6 — Caro-Kann",
+  "color": "black",
+  "lines": [
+    {
+      "id": "ck-advance",
+      "name": "Advance Variation",
+      "moves": ["e4", "c6", "d4", "d5", "e5", "Bf5", "Nf3", "e6", "Be2", "c5", "Be3"],
+      "notes": {
+        "1": "...c6 prepares ...d5 and keeps the c8 bishop's diagonal open.",
+        "3": "Challenge the center at once.",
+        "5": "The point of the Caro-Kann: the bishop gets out before ...e6 locks it in.",
+        "7": "Now ...e6 is fine. The light-squared bishop is already outside the pawn chain.",
+        "9": "...c5 hits the base of White's d4–e5 chain."
+      }
+    },
+    {
+      "id": "ck-exchange",
+      "name": "Exchange Variation",
+      "moves": ["e4", "c6", "d4", "d5", "exd5", "cxd5", "Bd3", "Nc6", "c3", "Nf6", "Bf4", "Bg4", "Qb3"],
+      "notes": {
+        "5": "Take back with the c-pawn. The structure is symmetrical, but you get the half-open c-file.",
+        "7": "Develop and add pressure on d4.",
+        "9": "Nf6 controls e4 and gets the king ready to castle.",
+        "11": "Get the bishop out actively before ...e6 locks it in. Watch out: with it gone from c8, b7 is loose and Qb3 hits it."
+      }
+    },
+    {
+      "id": "ck-classical",
+      "name": "Classical (4...Bf5)",
+      "moves": ["e4", "c6", "d4", "d5", "Nc3", "dxe4", "Nxe4", "Bf5", "Ng3", "Bg6", "h4", "h6", "Nf3", "Nd7", "h5", "Bh7"],
+      "notes": {
+        "5": "Give up the center for now in exchange for fast, easy development.",
+        "7": "Develop the bishop with tempo on the e4 knight.",
+        "9": "Keep the bishop on the diagonal. It retreats but doesn't go passive.",
+        "11": "...h6 makes room so the bishop can go to h7 when h5 comes.",
+        "13": "Nd7 stops White's Ne5 from hitting g6.",
+        "15": "The bishop is safe on h7 and still aims at White's queenside."
+      }
+    }
+  ]
+}
