@@ -28,6 +28,7 @@ const state = {
   repertoire: REPERTOIRES[0],
   progress: {},   // lineId → srs state
   drill: null,
+  lastMove: undefined, // [from, to] of the last move actually played
 };
 
 const cg = Chessground(els.board, {
@@ -45,7 +46,8 @@ function startLine(line) {
   els.lineName.textContent = line.name;
   setStatus('Your move.');
   showNote(null);
-  cg.set({ orientation: drill.playerColor, lastMove: undefined });
+  state.lastMove = undefined;
+  cg.set({ orientation: drill.playerColor });
   cg.setAutoShapes([]);
   syncBoard();
   renderLineList();
@@ -56,7 +58,7 @@ function queueOpponent(drill) {
   setTimeout(() => {
     if (state.drill !== drill || drill.done) return; // the user switched lines meanwhile
     const move = drill.playOpponent();
-    cg.set({ lastMove: [move.from, move.to] });
+    state.lastMove = [move.from, move.to];
     syncBoard();
     if (drill.done) finishLine();
     else setStatus('Your move.');
@@ -76,7 +78,7 @@ function onUserMove(orig, dest) {
     return;
   }
 
-  cg.set({ lastMove: [res.move.from, res.move.to] });
+  state.lastMove = [res.move.from, res.move.to];
   syncBoard();
   showNote(res.note);
   if (drill.done) finishLine();
@@ -120,6 +122,7 @@ function syncBoard() {
     fen: d.chess.fen(),
     turnColor: d.chess.turn() === 'w' ? 'white' : 'black',
     check: d.chess.inCheck(),
+    lastMove: state.lastMove,
     movable: { color: yourTurn ? d.playerColor : undefined, dests: yourTurn ? d.dests() : new Map() },
   });
   renderMoves();
@@ -253,6 +256,3 @@ selectRepertoire(els.select.value);
 fetchProgress()
   .then((progress) => { state.progress = progress; renderLineList(); })
   .catch((err) => showProgressError(`Couldn't load saved progress (${err.message}). You can still practice.`));
-
-// chessground caches square sizes; recompute them when the layout changes.
-window.addEventListener('resize', () => cg.redrawAll());

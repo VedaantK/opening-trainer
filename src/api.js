@@ -24,8 +24,12 @@ async function request(url, options) {
   } catch {
     throw new Error('Network error. Check your connection.');
   }
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `Server error (${res.status})`);
+  // If no backend is running (e.g. plain `vite` dev), the dev server answers
+  // /api/* with HTML or JS instead of JSON, so check the type, not just res.ok.
+  const isJson = res.headers.get('content-type')?.includes('application/json');
+  const body = isJson ? await res.json().catch(() => null) : null;
+  if (!res.ok) throw new Error(body?.error || (isJson ? `Server error (${res.status})` : 'Backend not available'));
+  if (!body) throw new Error('Backend not available');
   return body;
 }
 
@@ -35,7 +39,7 @@ export function fetchExplorer(fen) {
 
 export async function fetchProgress() {
   const { progress } = await request(`/api/progress?user=${getUserId()}`);
-  return progress; // { [lineId]: state }
+  return progress ?? {}; // { [lineId]: state }
 }
 
 export function saveProgress(lineId, state) {
