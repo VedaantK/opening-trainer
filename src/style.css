@@ -11,6 +11,8 @@
   --pill-new: #dbe8f7;
   --pill-due: #f7e1c9;
   --pill-later: #e3efe0;
+  --learn: #dbe8f7;
+  --test: #f7e1c9;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -27,6 +29,8 @@
     --pill-new: #24384d;
     --pill-due: #4d3722;
     --pill-later: #263b29;
+    --learn: #24384d;
+    --test: #4d3722;
     color-scheme: dark;
   }
 }
@@ -69,7 +73,16 @@ button.primary { background: var(--accent); color: var(--accent-text); border-co
 }
 .card h2 { font-size: 1rem; margin: 0 0 8px; }
 details.card summary { cursor: pointer; font-weight: 600; }
+.line-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .line-name { font-weight: 700; font-size: 1.1rem; }
+.mode-badge {
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+}
+.mode-badge.learn { background: var(--learn); }
+.mode-badge.test { background: var(--test); }
+.intro { margin: 8px 0 4px; color: var(--muted); }
+.action-btn { width: 100%; margin-top: 12px; }
 .status { min-height: 1.5em; margin-top: 4px; }
 .status.good { color: var(--good); }
 .status.bad { color: var(--bad); }

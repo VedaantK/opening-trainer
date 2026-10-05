@@ -18,8 +18,9 @@ const REP_KEY = 'opening-trainer:repertoire';
 const $ = (id) => document.getElementById(id);
 const els = {
   board: $('board'), select: $('repertoire-select'), next: $('next-btn'),
-  hint: $('hint-btn'), restart: $('restart-btn'), lineName: $('line-name'),
-  status: $('status'), note: $('note'), moveList: $('move-list'),
+  hint: $('hint-btn'), restart: $('restart-btn'), modeBtn: $('mode-btn'),
+  lineName: $('line-name'), modeBadge: $('mode-badge'), intro: $('intro'),
+  status: $('status'), note: $('note'), action: $('action-btn'), moveList: $('move-list'),
   statsCard: $('stats-card'), stats: $('stats'), lineList: $('line-list'),
   progressError: $('progress-error'),
 };
@@ -28,6 +29,7 @@ const state = {
   repertoire: REPERTOIRES[0],
   progress: {},   // lineId → srs state
   drill: null,
+  mode: 'test',   // 'learn' = guided walkthrough with arrows, 'test' = from memory
   lastMove: undefined, // [from, to] of the last move actually played
 };
 
@@ -40,18 +42,68 @@ const cg = Chessground(els.board, {
 
 // ---------- drill flow ----------
 
-function startLine(line) {
+// Lines you've never been tested on start with the guided walkthrough;
+// lines with saved progress go straight to the test.
+function defaultMode(line) {
+  return state.progress[line.id] ? 'test' : 'learn';
+}
+
+function startLine(line, mode = defaultMode(line)) {
   const drill = new Drill(line, state.repertoire.color);
   state.drill = drill;
+  state.mode = mode;
+  const learning = mode === 'learn';
+
   els.lineName.textContent = line.name;
-  setStatus('Your move.');
+  els.modeBadge.hidden = false;
+  els.modeBadge.textContent = learning ? 'Learn' : 'Test';
+  els.modeBadge.className = `mode-badge ${mode}`;
+  els.intro.hidden = !learning || !line.intro;
+  els.intro.textContent = line.intro ?? '';
+  els.hint.hidden = learning;
+  els.modeBtn.textContent = learning ? 'Skip to test' : 'Learn with arrows';
+  hideAction();
   showNote(null);
   state.lastMove = undefined;
   cg.set({ orientation: drill.playerColor });
   cg.setAutoShapes([]);
   syncBoard();
   renderLineList();
-  if (!drill.playerToMove) queueOpponent(drill);
+
+  if (learning) {
+    learnStep();
+  } else {
+    setStatus('Play the line from memory. No arrows this time.');
+    if (!drill.playerToMove) queueOpponent(drill);
+  }
+}
+
+/** Learn mode: show the next move with an arrow and explain it. */
+function learnStep() {
+  const d = state.drill;
+  if (d.done) {
+    cg.setAutoShapes([]);
+    showNote(null);
+    setStatus("That's the whole line. Now play it from memory, with no arrows.", 'good');
+    showAction('Start the test', () => startLine(d.line, 'test'));
+    return;
+  }
+  const { from, to } = d.expectedSquares();
+  showNote(d.line.notes?.[d.ply] ?? null);
+  if (d.playerToMove) {
+    cg.setAutoShapes([{ orig: from, dest: to, brush: 'green' }]);
+    setStatus(`Your move: play ${d.expected} (green arrow).`);
+    hideAction();
+  } else {
+    cg.setAutoShapes([{ orig: from, dest: to, brush: 'blue' }]);
+    setStatus(`Their move: ${d.expected} (blue arrow).`);
+    showAction('Continue ▶', () => {
+      const move = d.playOpponent();
+      state.lastMove = [move.from, move.to];
+      syncBoard();
+      learnStep();
+    });
+  }
 }
 
 function queueOpponent(drill) {
@@ -71,16 +123,22 @@ function onUserMove(orig, dest) {
   const res = drill.tryMove(orig, dest);
   cg.setAutoShapes([]);
 
+  if (state.mode === 'learn') {
+    if (res.ok) state.lastMove = [res.move.from, res.move.to];
+    syncBoard(); // on a wrong move this snaps the piece back
+    learnStep();
+    if (!res.ok) setStatus(`Not quite. Play ${drill.expected}, the green arrow.`, 'bad');
+    return;
+  }
+
   if (!res.ok) {
-    setStatus(res.tried ? `✗ ${res.tried} isn't the book move. Play the arrow.` : 'Illegal move.', 'bad');
-    showHintArrow();
+    setStatus(res.tried ? `✗ ${res.tried} isn't the move here. Try again, or press Hint.` : 'Illegal move.', 'bad');
     syncBoard(); // snaps the piece back
     return;
   }
 
   state.lastMove = [res.move.from, res.move.to];
   syncBoard();
-  showNote(res.note);
   if (drill.done) finishLine();
   else {
     setStatus(`✓ ${res.move.san}`, 'good');
@@ -139,6 +197,17 @@ function setStatus(text, tone = '') {
 function showNote(text) {
   els.note.hidden = !text;
   els.note.textContent = text ?? '';
+}
+
+function showAction(label, onClick) {
+  els.action.textContent = label;
+  els.action.onclick = onClick;
+  els.action.hidden = false;
+}
+
+function hideAction() {
+  els.action.hidden = true;
+  els.action.onclick = null;
 }
 
 function renderMoves() {
@@ -239,9 +308,15 @@ function selectRepertoire(id) {
 for (const r of REPERTOIRES) els.select.add(new Option(r.name, r.id));
 els.select.addEventListener('change', () => selectRepertoire(els.select.value));
 els.next.addEventListener('click', () => startLine(pickNext(state.repertoire.lines, state.progress)));
-els.restart.addEventListener('click', () => state.drill && startLine(state.drill.line));
+els.restart.addEventListener('click', () => state.drill && startLine(state.drill.line, state.mode));
+els.modeBtn.addEventListener('click', () => {
+  if (state.drill) startLine(state.drill.line, state.mode === 'learn' ? 'test' : 'learn');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' && !els.action.hidden && e.target.tagName !== 'SELECT') els.action.click();
+});
 els.hint.addEventListener('click', () => {
-  if (!state.drill?.playerToMove) return;
+  if (state.mode !== 'test' || !state.drill?.playerToMove) return;
   state.drill.reveal();
   showHintArrow();
   setStatus('Hint shown. This counts as a mistake for this line.', 'bad');
@@ -254,5 +329,12 @@ els.select.value = REPERTOIRES.some((r) => r.id === saved) ? saved : REPERTOIRES
 selectRepertoire(els.select.value);
 
 fetchProgress()
-  .then((progress) => { state.progress = progress; renderLineList(); })
+  .then((progress) => {
+    state.progress = progress;
+    // The first line started before progress arrived, so it defaulted to Learn.
+    // If it turns out you've already studied it, switch to the test.
+    const d = state.drill;
+    if (d && state.mode === 'learn' && d.ply === 0 && progress[d.line.id]) startLine(d.line, 'test');
+    else renderLineList();
+  })
   .catch((err) => showProgressError(`Couldn't load saved progress (${err.message}). You can still practice.`));

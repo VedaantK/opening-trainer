@@ -20,14 +20,20 @@
           <button id="next-btn" class="primary">Next line</button>
           <button id="hint-btn">Hint</button>
           <button id="restart-btn">Restart line</button>
+          <button id="mode-btn">Learn with arrows</button>
         </div>
       </section>
 
       <aside class="side-col">
         <div class="card">
-          <div id="line-name" class="line-name">Pick a line to start</div>
+          <div class="line-head">
+            <div id="line-name" class="line-name">Pick a line to start</div>
+            <span id="mode-badge" class="mode-badge" hidden></span>
+          </div>
+          <p id="intro" class="intro" hidden></p>
           <div id="status" class="status" role="status" aria-live="polite"></div>
           <div id="note" class="note" hidden></div>
+          <button id="action-btn" class="primary action-btn" hidden></button>
           <ol id="move-list" class="move-list"></ol>
         </div>
 
