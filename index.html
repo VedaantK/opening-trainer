@@ -7,25 +7,50 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♞</text></svg>" />
     <title>Opening Trainer</title>
   </head>
-  <body>
+  <body data-view="train">
     <header class="topbar">
       <h1>♞ Opening Trainer</h1>
-      <select id="repertoire-select" aria-label="Choose a repertoire"></select>
+      <div class="topbar-right">
+        <div class="tabs" role="tablist" aria-label="Mode">
+          <button id="tab-train" role="tab" aria-selected="true">Train</button>
+          <button id="tab-identify" role="tab" aria-selected="false">Identify</button>
+        </div>
+        <select id="repertoire-select" class="train-only" aria-label="Choose a repertoire"></select>
+      </div>
     </header>
 
     <main class="layout">
       <section class="board-col">
         <div id="board" class="board"></div>
-        <div class="controls">
+        <div class="controls train-only">
           <button id="next-btn" class="primary">Next line</button>
           <button id="hint-btn">Hint</button>
           <button id="restart-btn">Restart line</button>
           <button id="mode-btn">Learn with arrows</button>
         </div>
+        <div class="controls identify-only">
+          <button id="id-undo-btn">Undo</button>
+          <button id="id-reset-btn">Reset</button>
+          <button id="id-flip-btn">Flip board</button>
+        </div>
       </section>
 
       <aside class="side-col">
-        <div class="card">
+        <div class="card identify-only">
+          <h2>Opening identifier</h2>
+          <p class="muted id-help">Play moves for both sides. After each move you'll see which opening it is and the best reply from real games.</p>
+          <div id="id-opening" class="id-opening"></div>
+          <div id="id-best" class="id-best" hidden></div>
+          <div id="id-moves-stats" class="stats"></div>
+          <ol id="id-move-list" class="move-list"></ol>
+        </div>
+
+        <div class="card identify-only" id="id-rep-card" hidden>
+          <h2>In your lines</h2>
+          <div id="id-rep"></div>
+        </div>
+
+        <div class="card train-only">
           <div class="line-head">
             <div id="line-name" class="line-name">Pick a line to start</div>
             <span id="mode-badge" class="mode-badge" hidden></span>
@@ -37,12 +62,12 @@
           <ol id="move-list" class="move-list"></ol>
         </div>
 
-        <details class="card" id="stats-card">
+        <details class="card train-only" id="stats-card">
           <summary>Real-game stats for this position</summary>
           <div id="stats" class="stats"><p class="muted">Open to load stats from Lichess.</p></div>
         </details>
 
-        <div class="card">
+        <div class="card train-only">
           <h2>Your lines</h2>
           <ul id="line-list" class="line-list"></ul>
           <p id="progress-error" class="muted" hidden></p>

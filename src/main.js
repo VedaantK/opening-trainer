@@ -5,7 +5,9 @@ import 'chessground/assets/chessground.brown.css';
 import 'chessground/assets/chessground.cburnett.css';
 import './style.css';
 
+import { Chess } from 'chess.js';
 import { Drill } from './drill.js';
+import { scoreMoves, pickBestMove, findRepertoireMatches } from './identify.js';
 import { schedule, pickNext } from './srs.js';
 import { fetchExplorer, fetchProgress, saveProgress } from './api.js';
 import italian from './repertoires/italian-white.json';
@@ -23,6 +25,10 @@ const els = {
   status: $('status'), note: $('note'), action: $('action-btn'), moveList: $('move-list'),
   statsCard: $('stats-card'), stats: $('stats'), lineList: $('line-list'),
   progressError: $('progress-error'),
+  tabTrain: $('tab-train'), tabIdentify: $('tab-identify'),
+  idOpening: $('id-opening'), idBest: $('id-best'), idStats: $('id-moves-stats'),
+  idMoveList: $('id-move-list'), idRepCard: $('id-rep-card'), idRep: $('id-rep'),
+  idUndo: $('id-undo-btn'), idReset: $('id-reset-btn'), idFlip: $('id-flip-btn'),
 };
 
 const state = {
@@ -31,10 +37,18 @@ const state = {
   drill: null,
   mode: 'test',   // 'learn' = guided walkthrough with arrows, 'test' = from memory
   lastMove: undefined, // [from, to] of the last move actually played
+  view: 'train',  // 'train' = drills, 'identify' = free play with opening detection
+};
+
+// Free-play state for the opening identifier, kept separate from the drill.
+const idState = {
+  chess: new Chess(),
+  orientation: 'white',
+  lastMove: undefined,
 };
 
 const cg = Chessground(els.board, {
-  movable: { free: false, showDests: true, events: { after: onUserMove } },
+  movable: { free: false, showDests: true, events: { after: (orig, dest) => (state.view === 'identify' ? onIdentifyMove(orig, dest) : onUserMove(orig, dest)) } },
   draggable: { showGhost: true },
   highlight: { lastMove: true, check: true },
   animation: { duration: 200 },
@@ -108,7 +122,8 @@ function learnStep() {
 
 function queueOpponent(drill) {
   setTimeout(() => {
-    if (state.drill !== drill || drill.done) return; // the user switched lines meanwhile
+    // Skip if the user switched lines, left for the identifier, or the move was already played.
+    if (state.drill !== drill || drill.done || drill.playerToMove || state.view !== 'train') return;
     const move = drill.playOpponent();
     state.lastMove = [move.from, move.to];
     syncBoard();
@@ -211,12 +226,15 @@ function hideAction() {
 }
 
 function renderMoves() {
-  const history = state.drill.chess.history();
-  els.moveList.innerHTML = '';
+  renderMoveList(state.drill.chess.history(), els.moveList);
+}
+
+function renderMoveList(history, target) {
+  target.innerHTML = '';
   for (let i = 0; i < history.length; i += 2) {
     const li = document.createElement('li');
     li.textContent = `${history[i]} ${history[i + 1] ?? ''}`;
-    els.moveList.append(li);
+    target.append(li);
   }
 }
 
@@ -271,10 +289,10 @@ async function loadStats() {
   if (reqId === statsRequest) renderStats(statsCache.get(fen));
 }
 
-function renderStats(data) {
+function renderStats(data, target = els.stats, { showName = true } = {}) {
   const moves = (data.moves ?? []).slice(0, 6);
   if (!moves.length) {
-    els.stats.innerHTML = '<p class="muted">No games found for this position.</p>';
+    target.innerHTML = '<p class="muted">No games found for this position.</p>';
     return;
   }
   const total = moves.reduce((n, m) => n + m.white + m.draws + m.black, 0);
@@ -289,12 +307,203 @@ function renderStats(data) {
       </div>
     </div>`;
   }).join('');
-  const name = data.opening ? `<p class="opening">${escapeHtml(data.opening.eco)} · ${escapeHtml(data.opening.name)}</p>` : '';
-  els.stats.innerHTML = `${name}<div class="stat-head"><span>Move</span><span>Played</span><span>White / Draw / Black</span></div>${rows}`;
+  const name = showName && data.opening ? `<p class="opening">${escapeHtml(data.opening.eco)} · ${escapeHtml(data.opening.name)}</p>` : '';
+  target.innerHTML = `${name}<div class="stat-head"><span>Move</span><span>Played</span><span>White / Draw / Black</span></div>${rows}`;
 }
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+// ---------- opening identifier ----------
+
+function legalDests(chess) {
+  const map = new Map();
+  for (const m of chess.moves({ verbose: true })) {
+    if (!map.has(m.from)) map.set(m.from, []);
+    map.get(m.from).push(m.to);
+  }
+  return map;
+}
+
+const sideName = (chess) => (chess.turn() === 'w' ? 'white' : 'black');
+
+function onIdentifyMove(orig, dest) {
+  let move;
+  try {
+    move = idState.chess.move({ from: orig, to: dest, promotion: 'q' });
+  } catch {
+    idSync();
+    return;
+  }
+  idState.lastMove = [move.from, move.to];
+  idSync();
+}
+
+/** Push the identifier's position into chessground and refresh the panel. */
+function idSync() {
+  const c = idState.chess;
+  cg.set({
+    orientation: idState.orientation,
+    fen: c.fen(),
+    turnColor: sideName(c),
+    check: c.inCheck(),
+    lastMove: idState.lastMove,
+    movable: { color: c.isGameOver() ? undefined : sideName(c), dests: legalDests(c) },
+  });
+  cg.setAutoShapes([]);
+  renderMoveList(c.history(), els.idMoveList);
+  renderIdRepertoire();
+  loadIdStats();
+}
+
+let idRequest = 0;
+
+async function loadIdStats() {
+  const c = idState.chess;
+  const fen = c.fen();
+  const reqId = ++idRequest;
+  if (!statsCache.has(fen)) {
+    els.idBest.hidden = true;
+    els.idStats.innerHTML = '<p class="muted">Looking up this position…</p>';
+    try {
+      statsCache.set(fen, await fetchExplorer(fen));
+    } catch (err) {
+      if (reqId !== idRequest) return;
+      renderIdOpening(null);
+      els.idStats.innerHTML = `<p class="muted">Database unavailable: ${escapeHtml(err.message)}</p>`;
+      return;
+    }
+  }
+  if (reqId !== idRequest) return; // a newer move was made while this was loading
+  const data = statsCache.get(fen);
+  renderIdOpening(data);
+  renderIdBest(data);
+  renderStats(data, els.idStats, { showName: false });
+}
+
+/** The most recent named opening along the moves played, from cached lookups. */
+function lastKnownOpening() {
+  const replay = new Chess();
+  let found = null;
+  for (const san of idState.chess.history()) {
+    replay.move(san);
+    const name = statsCache.get(replay.fen())?.opening;
+    if (name) found = name;
+  }
+  return found;
+}
+
+function renderIdOpening(data) {
+  const plies = idState.chess.history().length;
+  let html;
+  if (data?.opening) {
+    html = `<span class="eco">${escapeHtml(data.opening.eco)}</span> <strong>${escapeHtml(data.opening.name)}</strong>`;
+  } else if (plies === 0) {
+    html = '<strong>Starting position</strong>';
+  } else {
+    const known = lastKnownOpening();
+    html = known
+      ? `<span class="eco">${escapeHtml(known.eco)}</span> <strong>${escapeHtml(known.name)}</strong><br><span class="muted">You've gone past the named part of this opening.</span>`
+      : '<strong>No named opening yet</strong>';
+  }
+  els.idOpening.innerHTML = html;
+}
+
+function renderIdBest(data) {
+  const c = idState.chess;
+  const side = sideName(c);
+  const best = pickBestMove(scoreMoves(data, side));
+  if (!best || c.isGameOver()) {
+    els.idBest.hidden = false;
+    els.idBest.innerHTML = c.isGameOver()
+      ? '<span class="muted">The game is over.</span>'
+      : '<span class="muted">No games in the database reach this position, so there is no suggestion.</span>';
+    cg.setAutoShapes([]);
+    return;
+  }
+  const m = new Chess(c.fen()).move(best.san);
+  cg.setAutoShapes([{ orig: m.from, dest: m.to, brush: 'green' }]);
+  const games = best.games.toLocaleString();
+  const leadsTo = best.opening ? ` It leads to the <em>${escapeHtml(best.opening.name)}</em>.` : '';
+  els.idBest.hidden = false;
+  els.idBest.innerHTML = `Best reply for ${side}: <strong class="san">${escapeHtml(best.san)}</strong> (green arrow).
+    <span class="muted">${side[0].toUpperCase() + side.slice(1)} scores ${(best.score * 100).toFixed(0)}% with it across ${games} games.${leadsTo}</span>`;
+}
+
+function renderIdRepertoire() {
+  const history = idState.chess.history();
+  const { matches, closest } = findRepertoireMatches(REPERTOIRES, history);
+  els.idRep.innerHTML = '';
+  els.idRepCard.hidden = !matches.length && !closest;
+
+  for (const m of matches) {
+    const row = document.createElement('div');
+    row.className = 'id-rep-row';
+    const text = document.createElement('p');
+    text.innerHTML = m.yourMove
+      ? `<strong></strong> (<span></span>): your line plays <strong class="san"></strong> here.`
+      : `<strong></strong> (<span></span>): your line expects <strong class="san"></strong> next.`;
+    const [lineName, repName, next] = text.querySelectorAll('strong, span');
+    lineName.textContent = m.line.name;
+    repName.textContent = m.repertoire.name;
+    next.textContent = m.nextMove;
+    const btn = document.createElement('button');
+    btn.textContent = 'Train this line';
+    btn.addEventListener('click', () => trainLine(m.repertoire, m.line));
+    row.append(text, btn);
+    els.idRep.append(row);
+  }
+
+  if (closest) {
+    const moveNo = Math.floor(closest.shared / 2) + 1;
+    const dots = closest.shared % 2 === 0 ? '.' : '...';
+    const label = (san) => `${moveNo}${dots}${san}`;
+    const p = document.createElement('p');
+    p.innerHTML = `You've left your lines. The closest is <strong></strong> (<span></span>), which played <strong class="san"></strong> instead of <strong class="san"></strong>.`;
+    const [lineName, repName, book, played] = p.querySelectorAll('strong, span');
+    lineName.textContent = closest.line.name;
+    repName.textContent = closest.repertoire.name;
+    book.textContent = label(closest.bookMove);
+    played.textContent = label(history[closest.shared]);
+    els.idRep.append(p);
+  }
+}
+
+function trainLine(repertoire, line) {
+  state.repertoire = repertoire;
+  els.select.value = repertoire.id;
+  try { localStorage.setItem(REP_KEY, repertoire.id); } catch {}
+  setView('train', { fresh: true });
+  startLine(line);
+  // On a phone this button sits below the board, so bring the board back into view.
+  if (els.board.getBoundingClientRect().top < 0) els.board.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ---------- views ----------
+
+function setView(view, { fresh = false } = {}) {
+  state.view = view;
+  document.body.dataset.view = view;
+  els.tabTrain.setAttribute('aria-selected', String(view === 'train'));
+  els.tabIdentify.setAttribute('aria-selected', String(view === 'identify'));
+  // Hiding the other view's controls can move the board without resizing it (on phones the
+  // top bar wraps), and chessground only re-measures on resize/scroll, so taps would land on
+  // the wrong squares. Force it to re-measure.
+  cg.redrawAll();
+  if (view === 'identify') {
+    idSync();
+    return;
+  }
+  if (fresh || !state.drill) return;
+  // Back to the drill exactly where it was left.
+  cg.set({ orientation: state.drill.playerColor });
+  syncBoard();
+  if (state.mode === 'learn') learnStep();
+  else {
+    cg.setAutoShapes([]);
+    if (!state.drill.done && !state.drill.playerToMove) queueOpponent(state.drill);
+  }
 }
 
 // ---------- setup ----------
@@ -322,6 +531,24 @@ els.hint.addEventListener('click', () => {
   setStatus('Hint shown. This counts as a mistake for this line.', 'bad');
 });
 els.statsCard.addEventListener('toggle', () => els.statsCard.open && loadStats());
+
+els.tabTrain.addEventListener('click', () => state.view !== 'train' && setView('train'));
+els.tabIdentify.addEventListener('click', () => state.view !== 'identify' && setView('identify'));
+els.idUndo.addEventListener('click', () => {
+  idState.chess.undo();
+  const last = idState.chess.history({ verbose: true }).at(-1);
+  idState.lastMove = last ? [last.from, last.to] : undefined;
+  idSync();
+});
+els.idReset.addEventListener('click', () => {
+  idState.chess = new Chess();
+  idState.lastMove = undefined;
+  idSync();
+});
+els.idFlip.addEventListener('click', () => {
+  idState.orientation = idState.orientation === 'white' ? 'black' : 'white';
+  cg.set({ orientation: idState.orientation });
+});
 
 let saved = null;
 try { saved = localStorage.getItem(REP_KEY); } catch {}
