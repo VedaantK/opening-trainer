@@ -57,6 +57,18 @@ export class Drill {
     return { ok: true, move, note: this.line.notes?.[noteIndex] };
   }
 
+  /**
+   * Jump to the position after `ply` book moves (0 = starting position), for stepping
+   * back and forth through the line. Mistakes already made are kept.
+   */
+  goTo(ply) {
+    const target = Math.max(0, Math.min(ply, this.line.moves.length));
+    this.chess = new Chess();
+    for (const san of this.line.moves.slice(0, target)) this.chess.move(san);
+    this.ply = target;
+    this.revealed = false;
+  }
+
   /** Show the answer for this move. Counts as a mistake (once per move). */
   reveal() {
     if (!this.revealed) this.mistakes++;

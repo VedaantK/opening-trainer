@@ -35,3 +35,26 @@ test('black waits for white first', () => {
   d.playOpponent();
   assert.ok(d.playerToMove);
 });
+
+test('goTo steps back and forward through the line', () => {
+  const d = new Drill(line, 'white');
+  d.goTo(3);
+  assert.equal(d.ply, 3);
+  assert.deepEqual(d.chess.history(), ['e4', 'e5', 'Nf3']);
+  assert.ok(!d.playerToMove); // black to move after 3 plies
+  d.goTo(1);
+  assert.deepEqual(d.chess.history(), ['e4']);
+  assert.equal(d.expected, 'e5');
+  d.goTo(99);
+  assert.ok(d.done);
+  d.goTo(-5);
+  assert.equal(d.ply, 0);
+  assert.equal(d.chess.history().length, 0);
+});
+
+test('goTo keeps mistakes already made', () => {
+  const d = new Drill(line, 'white');
+  d.tryMove('d2', 'd4');
+  d.goTo(2);
+  assert.equal(d.mistakes, 1);
+});

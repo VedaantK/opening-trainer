@@ -15,9 +15,10 @@
           <button id="tab-train" role="tab" aria-selected="true">Train</button>
           <button id="tab-identify" role="tab" aria-selected="false">Identify</button>
         </div>
-        <select id="repertoire-select" class="train-only" aria-label="Choose a repertoire"></select>
       </div>
     </header>
+
+    <nav id="picker" class="picker train-only" aria-label="Choose an opening"></nav>
 
     <main class="layout">
       <section class="board-col">
@@ -29,7 +30,8 @@
           <button id="mode-btn">Learn with arrows</button>
         </div>
         <div class="controls identify-only">
-          <button id="id-undo-btn">Undo</button>
+          <button id="id-undo-btn" aria-label="Back one move">◀ Back</button>
+          <button id="id-redo-btn" aria-label="Forward one move">Forward ▶</button>
           <button id="id-reset-btn">Reset</button>
           <button id="id-flip-btn">Flip board</button>
         </div>
@@ -59,6 +61,11 @@
           <div id="status" class="status" role="status" aria-live="polite"></div>
           <div id="note" class="note" hidden></div>
           <button id="action-btn" class="primary action-btn" hidden></button>
+          <div id="nav-row" class="nav-row" hidden>
+            <button id="prev-btn" aria-label="Previous move">◀</button>
+            <span class="nav-hint">← → arrow keys</span>
+            <button id="fwd-btn" aria-label="Next move">▶</button>
+          </div>
           <ol id="move-list" class="move-list"></ol>
         </div>
 

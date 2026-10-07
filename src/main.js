@@ -26,7 +26,8 @@ const REP_KEY = 'opening-trainer:repertoire';
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  board: $('board'), select: $('repertoire-select'), next: $('next-btn'),
+  board: $('board'), picker: $('picker'), next: $('next-btn'),
+  navRow: $('nav-row'), prev: $('prev-btn'), fwd: $('fwd-btn'), idRedo: $('id-redo-btn'),
   hint: $('hint-btn'), restart: $('restart-btn'), modeBtn: $('mode-btn'),
   lineName: $('line-name'), modeBadge: $('mode-badge'), intro: $('intro'),
   status: $('status'), note: $('note'), action: $('action-btn'), moveList: $('move-list'),
@@ -45,6 +46,7 @@ const state = {
   mode: 'test',   // 'learn' = guided walkthrough with arrows, 'test' = from memory
   lastMove: undefined, // [from, to] of the last move actually played
   view: 'train',  // 'train' = drills, 'identify' = free play with opening detection
+  reviewing: false, // a finished test line being stepped through with the arrow keys
 };
 
 // Free-play state for the opening identifier, kept separate from the drill.
@@ -52,6 +54,7 @@ const idState = {
   chess: new Chess(),
   orientation: 'white',
   lastMove: undefined,
+  future: [], // moves taken back with ◀, replayed by ▶ until a different move is played
 };
 
 const cg = Chessground(els.board, {
@@ -73,7 +76,9 @@ function startLine(line, mode = defaultMode(line)) {
   const drill = new Drill(line, state.repertoire.color);
   state.drill = drill;
   state.mode = mode;
+  state.reviewing = false;
   const learning = mode === 'learn';
+  els.navRow.hidden = !learning;
 
   els.lineName.textContent = line.name;
   els.modeBadge.hidden = false;
@@ -130,7 +135,7 @@ function learnStep() {
 function queueOpponent(drill) {
   setTimeout(() => {
     // Skip if the user switched lines, left for the identifier, or the move was already played.
-    if (state.drill !== drill || drill.done || drill.playerToMove || state.view !== 'train') return;
+    if (state.drill !== drill || drill.done || drill.playerToMove || state.view !== 'train' || state.reviewing) return;
     const move = drill.playOpponent();
     state.lastMove = [move.from, move.to];
     syncBoard();
@@ -173,9 +178,12 @@ async function finishLine() {
   const id = drill.line.id;
   const result = drill.result;
   setStatus(result === 'pass'
-    ? '🎉 Perfect! Line complete with no mistakes.'
-    : `Line complete with ${drill.mistakes} mistake${drill.mistakes > 1 ? 's' : ''}. It'll come back sooner.`,
+    ? '🎉 Perfect! Line complete with no mistakes. Use ← → to review it.'
+    : `Line complete with ${drill.mistakes} mistake${drill.mistakes > 1 ? 's' : ''}. It'll come back sooner. Use ← → to review it.`,
     result === 'pass' ? 'good' : 'bad');
+  state.reviewing = true; // the result is recorded; from here the arrows just browse the line
+  els.navRow.hidden = false;
+  syncBoard();
 
   state.progress[id] = schedule(state.progress[id], result);
   renderLineList();
@@ -197,7 +205,7 @@ function showHintArrow() {
 /** Push the drill's position into chessground. */
 function syncBoard() {
   const d = state.drill;
-  const yourTurn = d.playerToMove;
+  const yourTurn = d.playerToMove && !state.reviewing;
   cg.set({
     fen: d.chess.fen(),
     turnColor: d.chess.turn() === 'w' ? 'white' : 'black',
@@ -206,8 +214,57 @@ function syncBoard() {
     movable: { color: yourTurn ? d.playerColor : undefined, dests: yourTurn ? d.dests() : new Map() },
   });
   renderMoves();
+  els.prev.disabled = d.ply === 0;
+  els.fwd.disabled = d.done;
   if (els.statsCard.open) loadStats();
 }
+
+// ---------- stepping through moves (← → keys and ◀ ▶ buttons) ----------
+
+/** Move the drill one step back or forward. Returns false if that isn't allowed here. */
+function drillStep(dir) {
+  const d = state.drill;
+  if (!d) return false;
+  if (state.mode === 'test' && !state.reviewing) {
+    setStatus('The arrow keys are off during the test. Finish the line, then use them to review it.');
+    return false;
+  }
+  const target = d.ply + dir;
+  if (target < 0 || target > d.line.moves.length) return false;
+  d.goTo(target);
+  const last = d.chess.history({ verbose: true }).at(-1);
+  state.lastMove = last ? [last.from, last.to] : undefined;
+  syncBoard();
+  if (state.mode === 'learn') {
+    learnStep();
+  } else {
+    // Reviewing a finished test: explain the move that was just shown.
+    cg.setAutoShapes([]);
+    showNote(d.ply ? d.line.notes?.[d.ply - 1] ?? null : null);
+    setStatus(`Reviewing: move ${d.ply} of ${d.line.moves.length}.`);
+  }
+  return true;
+}
+
+/** Identifier: ◀ takes a move back, ▶ replays it (until a different move is played). */
+function idStep(dir) {
+  const c = idState.chess;
+  if (dir < 0) {
+    const undone = c.undo();
+    if (!undone) return false;
+    idState.future.push(undone.san);
+  } else {
+    const san = idState.future.pop();
+    if (!san) return false;
+    c.move(san);
+  }
+  const last = c.history({ verbose: true }).at(-1);
+  idState.lastMove = last ? [last.from, last.to] : undefined;
+  idSync();
+  return true;
+}
+
+const step = (dir) => (state.view === 'identify' ? idStep(dir) : drillStep(dir));
 
 // ---------- rendering ----------
 
@@ -344,6 +401,9 @@ function onIdentifyMove(orig, dest) {
     return;
   }
   idState.lastMove = [move.from, move.to];
+  // Playing a different move than the one taken back starts a new branch.
+  if (idState.future.at(-1) === move.san) idState.future.pop();
+  else idState.future = [];
   idSync();
 }
 
@@ -360,6 +420,8 @@ function idSync() {
   });
   cg.setAutoShapes([]);
   renderMoveList(c.history(), els.idMoveList);
+  els.idUndo.disabled = c.history().length === 0;
+  els.idRedo.disabled = idState.future.length === 0;
   renderIdRepertoire();
   loadIdStats();
 }
@@ -479,7 +541,7 @@ function renderIdRepertoire() {
 
 function trainLine(repertoire, line) {
   state.repertoire = repertoire;
-  els.select.value = repertoire.id;
+  renderPicker();
   try { localStorage.setItem(REP_KEY, repertoire.id); } catch {}
   setView('train', { fresh: true });
   startLine(line);
@@ -518,26 +580,55 @@ function setView(view, { fresh = false } = {}) {
 function selectRepertoire(id) {
   state.repertoire = REPERTOIRES.find((r) => r.id === id) ?? REPERTOIRES[0];
   try { localStorage.setItem(REP_KEY, state.repertoire.id); } catch {}
+  renderPicker();
   startLine(pickNext(state.repertoire.lines, state.progress));
 }
 
-for (const [color, label] of [['white', 'Play as White'], ['black', 'Play as Black']]) {
-  const group = document.createElement('optgroup');
-  group.label = label;
-  for (const r of REPERTOIRES.filter((rep) => rep.color === color)) group.append(new Option(r.name, r.id));
-  els.select.append(group);
+/** The opening picker: one row of buttons per color, with the current opening highlighted. */
+function renderPicker() {
+  els.picker.innerHTML = '';
+  for (const [color, label] of [['white', '♔ White'], ['black', '♚ Black']]) {
+    const row = document.createElement('div');
+    row.className = 'picker-row';
+    const heading = document.createElement('span');
+    heading.className = 'picker-label';
+    heading.textContent = label;
+    const chips = document.createElement('div');
+    chips.className = 'picker-chips';
+    for (const rep of REPERTOIRES.filter((r) => r.color === color)) {
+      const [moves, title] = rep.name.split(' — ');
+      const btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.setAttribute('aria-pressed', String(rep === state.repertoire));
+      btn.innerHTML = '<span class="chip-title"></span><span class="chip-moves"></span>';
+      btn.children[0].textContent = title ?? rep.name;
+      btn.children[1].textContent = title ? moves : '';
+      btn.addEventListener('click', () => rep !== state.repertoire && selectRepertoire(rep.id));
+      chips.append(btn);
+    }
+    row.append(heading, chips);
+    els.picker.append(row);
+    // On phones each row scrolls sideways; keep the selected opening in view.
+    const active = chips.querySelector('[aria-pressed="true"]');
+    if (active) chips.scrollLeft = active.offsetLeft - chips.offsetLeft - 8;
+  }
 }
-els.select.addEventListener('change', () => selectRepertoire(els.select.value));
+
 els.next.addEventListener('click', () => startLine(pickNext(state.repertoire.lines, state.progress)));
 els.restart.addEventListener('click', () => state.drill && startLine(state.drill.line, state.mode));
 els.modeBtn.addEventListener('click', () => {
   if (state.drill) startLine(state.drill.line, state.mode === 'learn' ? 'test' : 'learn');
 });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' && !els.action.hidden && e.target.tagName !== 'SELECT') els.action.click();
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+  if (step(e.key === 'ArrowRight' ? 1 : -1)) e.preventDefault();
 });
+els.prev.addEventListener('click', () => step(-1));
+els.fwd.addEventListener('click', () => step(1));
 els.hint.addEventListener('click', () => {
-  if (state.mode !== 'test' || !state.drill?.playerToMove) return;
+  if (state.mode !== 'test' || state.reviewing || !state.drill?.playerToMove) return;
   state.drill.reveal();
   showHintArrow();
   setStatus('Hint shown. This counts as a mistake for this line.', 'bad');
@@ -546,15 +637,12 @@ els.statsCard.addEventListener('toggle', () => els.statsCard.open && loadStats()
 
 els.tabTrain.addEventListener('click', () => state.view !== 'train' && setView('train'));
 els.tabIdentify.addEventListener('click', () => state.view !== 'identify' && setView('identify'));
-els.idUndo.addEventListener('click', () => {
-  idState.chess.undo();
-  const last = idState.chess.history({ verbose: true }).at(-1);
-  idState.lastMove = last ? [last.from, last.to] : undefined;
-  idSync();
-});
+els.idUndo.addEventListener('click', () => idStep(-1));
+els.idRedo.addEventListener('click', () => idStep(1));
 els.idReset.addEventListener('click', () => {
   idState.chess = new Chess();
   idState.lastMove = undefined;
+  idState.future = [];
   idSync();
 });
 els.idFlip.addEventListener('click', () => {
@@ -564,8 +652,7 @@ els.idFlip.addEventListener('click', () => {
 
 let saved = null;
 try { saved = localStorage.getItem(REP_KEY); } catch {}
-els.select.value = REPERTOIRES.some((r) => r.id === saved) ? saved : REPERTOIRES[0].id;
-selectRepertoire(els.select.value);
+selectRepertoire(REPERTOIRES.some((r) => r.id === saved) ? saved : REPERTOIRES[0].id);
 
 fetchProgress()
   .then((progress) => {
