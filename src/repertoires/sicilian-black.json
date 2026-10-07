@@ -1,0 +1,122 @@
+{
+  "id": "sicilian-black",
+  "name": "1.e4 c5 — Sicilian Defense",
+  "color": "black",
+  "lines": [
+    {
+      "id": "sic-najdorf-be3",
+      "name": "Najdorf vs. 6.Be3",
+      "intro": "The Najdorf is the sharpest Sicilian. You trade your c-pawn for White's d-pawn, then play ...a6 to control b5. Against 6.Be3, grab space with ...e5 and develop quickly.",
+      "moves": [
+        "e4",
+        "c5",
+        "Nf3",
+        "d6",
+        "d4",
+        "cxd4",
+        "Nxd4",
+        "Nf6",
+        "Nc3",
+        "a6",
+        "Be3",
+        "e5",
+        "Nb3",
+        "Be6",
+        "f3",
+        "Be7"
+      ],
+      "notes": {
+        "0": "White opens with the king's pawn.",
+        "1": "The Sicilian: fight for d4 from the side and steer into an unbalanced game.",
+        "2": "White prepares d4.",
+        "3": "Control e5, so your knight on f6 can't be kicked by e5 later.",
+        "4": "White opens the center.",
+        "5": "Trade your c-pawn for White's center pawn. You get the half-open c-file.",
+        "6": "White takes back with the knight.",
+        "7": "Develop with an attack on e4.",
+        "8": "White defends e4.",
+        "9": "The Najdorf move: control b5 and keep your options open.",
+        "10": "The English Attack setup: Be3, f3, Qd2, and castling long.",
+        "11": "Kick the knight and grab space in the center.",
+        "12": "The knight retreats.",
+        "13": "Develop and control d5, the key square in this structure.",
+        "14": "White stops ...Ng4 from hitting the e3 bishop.",
+        "15": "Get ready to castle. Then come ...Nbd7 and ...b5."
+      }
+    },
+    {
+      "id": "sic-najdorf-be2",
+      "name": "Najdorf vs. 6.Be2",
+      "intro": "Against the quiet 6.Be2, take space with ...e5, develop, and castle. Your play comes on the queenside and against e4.",
+      "moves": [
+        "e4",
+        "c5",
+        "Nf3",
+        "d6",
+        "d4",
+        "cxd4",
+        "Nxd4",
+        "Nf6",
+        "Nc3",
+        "a6",
+        "Be2",
+        "e5",
+        "Nb3",
+        "Be7",
+        "O-O",
+        "O-O"
+      ],
+      "notes": {
+        "0": "White opens with the king's pawn.",
+        "1": "The Sicilian: fight for d4 from the side and steer into an unbalanced game.",
+        "2": "White prepares d4.",
+        "3": "Control e5, so your knight on f6 can't be kicked by e5 later.",
+        "4": "White opens the center.",
+        "5": "Trade your c-pawn for White's center pawn. You get the half-open c-file.",
+        "6": "White takes back with the knight.",
+        "7": "Develop with an attack on e4.",
+        "8": "White defends e4.",
+        "9": "The Najdorf move: control b5 and keep your options open.",
+        "10": "A quiet setup. White plans to castle short.",
+        "11": "Kick the knight and grab space in the center.",
+        "12": "The knight retreats.",
+        "13": "Develop and get ready to castle.",
+        "14": "White castles.",
+        "15": "Castle too. Next come ...Be6 and ...Nbd7."
+      }
+    },
+    {
+      "id": "sic-alapin",
+      "name": "Alapin (2.c3)",
+      "intro": "In the Alapin, White plays c3 to build a big center with d4. Hit e4 right away with ...Nf6, then trade on d4 and develop.",
+      "moves": [
+        "e4",
+        "c5",
+        "c3",
+        "Nf6",
+        "e5",
+        "Nd5",
+        "d4",
+        "cxd4",
+        "Nf3",
+        "Nc6",
+        "cxd4",
+        "d6"
+      ],
+      "notes": {
+        "0": "White opens with the king's pawn.",
+        "1": "The Sicilian: fight for d4 from the side and steer into an unbalanced game.",
+        "2": "The Alapin: White prepares d4 so it can take back with a pawn.",
+        "3": "Attack e4 straight away.",
+        "4": "White kicks the knight.",
+        "5": "The knight lands on a strong central square.",
+        "6": "White takes the center.",
+        "7": "Trade on d4.",
+        "8": "White develops and gets ready to take back on d4.",
+        "9": "Develop and add pressure on d4 and e5.",
+        "10": "White takes back.",
+        "11": "Challenge e5 right away and open the c8 bishop."
+      }
+    }
+  ]
+}

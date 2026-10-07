@@ -1,0 +1,106 @@
+{
+  "id": "french-black",
+  "name": "1.e4 e6 — French Defense",
+  "color": "black",
+  "lines": [
+    {
+      "id": "fr-advance",
+      "name": "Advance Variation",
+      "intro": "White pushes e5 to grab space. Your plan is to attack the base of White's pawn chain with ...c5, pile up on d4 with ...Nc6 and ...Qb6, and play on the queenside.",
+      "moves": [
+        "e4",
+        "e6",
+        "d4",
+        "d5",
+        "e5",
+        "c5",
+        "c3",
+        "Nc6",
+        "Nf3",
+        "Qb6",
+        "a3",
+        "c4"
+      ],
+      "notes": {
+        "0": "White opens with the king's pawn.",
+        "1": "The French: prepare ...d5 with a pawn ready to back it up.",
+        "2": "White takes the full center.",
+        "3": "Challenge e4.",
+        "4": "The Advance: White pushes past your pawn and grabs space.",
+        "5": "Hit the base of White's pawn chain at once.",
+        "6": "White props up d4.",
+        "7": "Add pressure on d4.",
+        "8": "White defends d4 again.",
+        "9": "The queen joins the attack on d4 and also eyes b2.",
+        "10": "White prepares b4 to grab queenside space.",
+        "11": "...c4 blocks the queenside and stops b4. Next come ...Bd7 and ...Na5."
+      }
+    },
+    {
+      "id": "fr-winawer",
+      "name": "Winawer (3...Bb4)",
+      "intro": "The Winawer is the sharpest French. You pin White's knight, then trade it off, giving White doubled pawns in return for the bishop pair.",
+      "moves": [
+        "e4",
+        "e6",
+        "d4",
+        "d5",
+        "Nc3",
+        "Bb4",
+        "e5",
+        "c5",
+        "a3",
+        "Bxc3+",
+        "bxc3",
+        "Ne7"
+      ],
+      "notes": {
+        "0": "White opens with the king's pawn.",
+        "1": "The French: prepare ...d5 with a pawn ready to back it up.",
+        "2": "White takes the full center.",
+        "3": "Challenge e4.",
+        "4": "White defends e4.",
+        "5": "The Winawer: pin the knight that defends e4.",
+        "6": "White pushes to gain space and close the center.",
+        "7": "Hit d4 right away.",
+        "8": "White asks the bishop to decide.",
+        "9": "Take the knight. White's pawns will be doubled.",
+        "10": "White takes back, getting the bishop pair but doubled c-pawns.",
+        "11": "Develop the knight to e7, heading for f5 or c6 without blocking your f-pawn."
+      }
+    },
+    {
+      "id": "fr-tarrasch",
+      "name": "Tarrasch (3.Nd2)",
+      "intro": "In the Tarrasch, White avoids the Winawer pin with Nd2. You strike back with ...c5 and accept an isolated d-pawn in return for active pieces.",
+      "moves": [
+        "e4",
+        "e6",
+        "d4",
+        "d5",
+        "Nd2",
+        "c5",
+        "exd5",
+        "exd5",
+        "Ngf3",
+        "Nc6",
+        "Bb5",
+        "Bd6"
+      ],
+      "notes": {
+        "0": "White opens with the king's pawn.",
+        "1": "The French: prepare ...d5 with a pawn ready to back it up.",
+        "2": "White takes the full center.",
+        "3": "Challenge e4.",
+        "4": "The Tarrasch: White defends e4 without allowing a pin.",
+        "5": "Hit the center right away.",
+        "6": "White trades in the center.",
+        "7": "Take back with the e-pawn. Your c8 bishop is free now.",
+        "8": "White develops.",
+        "9": "Develop and pressure d4.",
+        "10": "White pins the knight.",
+        "11": "Develop actively. You may end up with an isolated pawn, but your pieces will be active."
+      }
+    }
+  ]
+}

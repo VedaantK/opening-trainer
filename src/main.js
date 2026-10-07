@@ -11,9 +11,16 @@ import { scoreMoves, pickBestMove, findRepertoireMatches } from './identify.js';
 import { schedule, pickNext } from './srs.js';
 import { fetchExplorer, fetchProgress, saveProgress } from './api.js';
 import italian from './repertoires/italian-white.json';
+import ruyLopez from './repertoires/ruy-lopez-white.json';
+import queensGambit from './repertoires/queens-gambit-white.json';
+import london from './repertoires/london-white.json';
+import sicilian from './repertoires/sicilian-black.json';
 import caroKann from './repertoires/caro-kann-black.json';
+import french from './repertoires/french-black.json';
+import kingsIndian from './repertoires/kings-indian-black.json';
+import slav from './repertoires/slav-black.json';
 
-const REPERTOIRES = [italian, caroKann];
+const REPERTOIRES = [italian, ruyLopez, queensGambit, london, sicilian, caroKann, french, kingsIndian, slav];
 const OPPONENT_DELAY_MS = 450;
 const REP_KEY = 'opening-trainer:repertoire';
 
@@ -514,7 +521,12 @@ function selectRepertoire(id) {
   startLine(pickNext(state.repertoire.lines, state.progress));
 }
 
-for (const r of REPERTOIRES) els.select.add(new Option(r.name, r.id));
+for (const [color, label] of [['white', 'Play as White'], ['black', 'Play as Black']]) {
+  const group = document.createElement('optgroup');
+  group.label = label;
+  for (const r of REPERTOIRES.filter((rep) => rep.color === color)) group.append(new Option(r.name, r.id));
+  els.select.append(group);
+}
 els.select.addEventListener('change', () => selectRepertoire(els.select.value));
 els.next.addEventListener('click', () => startLine(pickNext(state.repertoire.lines, state.progress)));
 els.restart.addEventListener('click', () => state.drill && startLine(state.drill.line, state.mode));

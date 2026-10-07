@@ -1,0 +1,112 @@
+{
+  "id": "london-white",
+  "name": "1.d4 — London System",
+  "color": "white",
+  "lines": [
+    {
+      "id": "london-vs-d5",
+      "name": "vs. ...d5 and ...e6",
+      "intro": "The London is a system: you play the same setup in almost every game. Get the bishop out to f4 before e3, then build a triangle of pawns on c3, d4 and e3.",
+      "moves": [
+        "d4",
+        "d5",
+        "Bf4",
+        "Nf6",
+        "e3",
+        "e6",
+        "Nf3",
+        "c5",
+        "c3",
+        "Nc6",
+        "Nbd2",
+        "Bd6",
+        "Bg3",
+        "O-O",
+        "Bd3"
+      ],
+      "notes": {
+        "0": "Take the center.",
+        "1": "Black meets you in the center.",
+        "2": "The London bishop comes out before e3 can lock it in.",
+        "3": "Black develops.",
+        "4": "Support d4 and open the f1 bishop.",
+        "5": "Black opens the f8 bishop.",
+        "6": "Develop and control e5.",
+        "7": "Black attacks your center.",
+        "8": "Hold d4 with c3. That completes the London pawn triangle.",
+        "9": "Black adds more pressure on d4.",
+        "10": "Develop the knight behind your pawns, ready to support e4 or Ne5.",
+        "11": "Black offers to trade off your good bishop.",
+        "12": "Step back to g3 instead of trading. If Black takes, hxg3 gives you a half-open h-file.",
+        "13": "Black castles.",
+        "14": "Put the bishop on d3, aiming at h7."
+      }
+    },
+    {
+      "id": "london-vs-kid",
+      "name": "vs. King's Indian setup",
+      "intro": "Against ...g6 and ...Bg7, keep the same setup, but play h3 so your bishop has a safe square on h2.",
+      "moves": [
+        "d4",
+        "Nf6",
+        "Bf4",
+        "g6",
+        "e3",
+        "Bg7",
+        "Nf3",
+        "O-O",
+        "Be2",
+        "d6",
+        "h3",
+        "c5",
+        "c3"
+      ],
+      "notes": {
+        "0": "Take the center.",
+        "1": "Black develops and keeps options open.",
+        "2": "The London bishop comes out before e3 can lock it in.",
+        "3": "Black plans to fianchetto the bishop.",
+        "4": "Support d4 and open the f1 bishop.",
+        "5": "The bishop on g7 aims at your center.",
+        "6": "Develop and control e5.",
+        "7": "Black castles.",
+        "8": "A quiet square. Against this setup the bishop doesn't need to be on d3.",
+        "9": "Black prepares ...e5 or ...c5.",
+        "10": "h3 gives your bishop a retreat on h2 if ...Nh5 comes, and stops ...Bg4.",
+        "11": "Black hits d4.",
+        "12": "Hold d4 with c3."
+      }
+    },
+    {
+      "id": "london-vs-c5",
+      "name": "vs. early ...c5 and ...Qb6",
+      "intro": "When Black hits d4 early and brings the queen to b6 to attack b2, the simplest answer is to offer a queen trade with Qb3.",
+      "moves": [
+        "d4",
+        "d5",
+        "Bf4",
+        "c5",
+        "e3",
+        "Nc6",
+        "Nf3",
+        "Nf6",
+        "c3",
+        "Qb6",
+        "Qb3"
+      ],
+      "notes": {
+        "0": "Take the center.",
+        "1": "Black meets you in the center.",
+        "2": "The London bishop comes out before e3 can lock it in.",
+        "3": "Black attacks d4 right away.",
+        "4": "Support d4.",
+        "5": "More pressure on d4.",
+        "6": "Develop and defend d4 again.",
+        "7": "Black develops.",
+        "8": "Hold d4 with c3.",
+        "9": "The queen attacks b2, which your bishop no longer defends now that it has left c1.",
+        "10": "Offer a queen trade. If Black takes, axb3 opens the a-file for your rook."
+      }
+    }
+  ]
+}

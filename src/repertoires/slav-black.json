@@ -1,0 +1,118 @@
+{
+  "id": "slav-black",
+  "name": "1.d4 d5 2.c4 c6 — Slav Defense",
+  "color": "black",
+  "lines": [
+    {
+      "id": "slav-main",
+      "name": "Main line (4.Nc3 dxc4)",
+      "intro": "In the Slav you defend d5 with ...c6, so your light-squared bishop can come out to f5 before ...e6. In the main line you take on c4, then develop and castle.",
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "c6",
+        "Nf3",
+        "Nf6",
+        "Nc3",
+        "dxc4",
+        "a4",
+        "Bf5",
+        "e3",
+        "e6",
+        "Bxc4",
+        "Bb4",
+        "O-O",
+        "O-O"
+      ],
+      "notes": {
+        "0": "White opens with the queen's pawn.",
+        "1": "Claim your share of the center.",
+        "2": "The Queen's Gambit: White offers a pawn.",
+        "3": "The Slav: defend d5 with the c-pawn and keep the c8 bishop free.",
+        "4": "White develops.",
+        "5": "Develop.",
+        "6": "White adds pressure on d5.",
+        "7": "Take the pawn. White will spend time winning it back.",
+        "8": "White stops ...b5, so you can't keep the pawn.",
+        "9": "Get the bishop out before ...e6. This is the point of the Slav.",
+        "10": "White prepares to win back c4.",
+        "11": "Now ...e6 doesn't lock in your bishop.",
+        "12": "White wins the pawn back.",
+        "13": "Pin the knight so White can't easily push e4.",
+        "14": "White castles.",
+        "15": "Castle too. You have a solid, comfortable position."
+      }
+    },
+    {
+      "id": "slav-exchange",
+      "name": "Exchange (3.cxd5)",
+      "intro": "White trades on d5 for a symmetrical structure. Develop actively, copy White's setup where it makes sense, and watch the c-file.",
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "c6",
+        "cxd5",
+        "cxd5",
+        "Nc3",
+        "Nf6",
+        "Bf4",
+        "Nc6",
+        "e3",
+        "Bf5"
+      ],
+      "notes": {
+        "0": "White opens with the queen's pawn.",
+        "1": "Claim your share of the center.",
+        "2": "The Queen's Gambit: White offers a pawn.",
+        "3": "The Slav: defend d5 with the c-pawn and keep the c8 bishop free.",
+        "4": "The Exchange: White trades pawns.",
+        "5": "Take back. The position is symmetrical.",
+        "6": "White puts pressure on d5.",
+        "7": "Defend d5.",
+        "8": "White develops the bishop outside the pawn chain.",
+        "9": "Develop and pressure d4.",
+        "10": "White supports d4.",
+        "11": "Copy White: get your bishop out before ...e6."
+      }
+    },
+    {
+      "id": "slav-e3",
+      "name": "vs. 4.e3",
+      "intro": "Against the quiet 4.e3, develop the bishop to f5 anyway. If White chases it with Nh4, drop back to g6, and take back with the h-pawn if it's traded.",
+      "moves": [
+        "d4",
+        "d5",
+        "c4",
+        "c6",
+        "Nf3",
+        "Nf6",
+        "e3",
+        "Bf5",
+        "Nc3",
+        "e6",
+        "Nh4",
+        "Bg6",
+        "Nxg6",
+        "hxg6"
+      ],
+      "notes": {
+        "0": "White opens with the queen's pawn.",
+        "1": "Claim your share of the center.",
+        "2": "The Queen's Gambit: White offers a pawn.",
+        "3": "The Slav: defend d5 with the c-pawn and keep the c8 bishop free.",
+        "4": "White develops.",
+        "5": "Develop.",
+        "6": "White supports d4 and opens the f1 bishop, but shuts in the c1 bishop.",
+        "7": "Get the bishop out before ...e6. This is the main idea of the Slav.",
+        "8": "White develops.",
+        "9": "Now ...e6 is safe: your bishop is already outside the pawn chain.",
+        "10": "White chases the bishop to win the bishop pair.",
+        "11": "Keep the bishop on its diagonal.",
+        "12": "White takes it.",
+        "13": "Take back with the h-pawn. Your rook gets a half-open h-file."
+      }
+    }
+  ]
+}
