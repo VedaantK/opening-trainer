@@ -22,6 +22,8 @@ import slav from './repertoires/slav-black.json';
 
 const REPERTOIRES = [italian, ruyLopez, queensGambit, london, sicilian, caroKann, french, kingsIndian, slav];
 const OPPONENT_DELAY_MS = 450;
+// In Learn mode the opponent's move waits a little longer so you can see its blue arrow first.
+const LEARN_OPPONENT_DELAY_MS = 1000;
 const REP_KEY = 'opening-trainer:repertoire';
 
 const $ = (id) => document.getElementById(id);
@@ -47,6 +49,7 @@ const state = {
   lastMove: undefined, // [from, to] of the last move actually played
   view: 'train',  // 'train' = drills, 'identify' = free play with opening detection
   reviewing: false, // a finished test line being stepped through with the arrow keys
+  learnTimer: null, // pending auto-played opponent move in Learn mode
 };
 
 // Free-play state for the opening identifier, kept separate from the drill.
@@ -97,7 +100,7 @@ function startLine(line, mode = defaultMode(line)) {
   renderLineList();
 
   if (learning) {
-    learnStep();
+    learnStep({ auto: true }); // for Black lines, White's first move plays itself
   } else {
     setStatus('Play the line from memory. No arrows this time.');
     if (!drill.playerToMove) queueOpponent(drill);
@@ -105,7 +108,13 @@ function startLine(line, mode = defaultMode(line)) {
 }
 
 /** Learn mode: show the next move with an arrow and explain it. */
-function learnStep() {
+/**
+ * Learn mode: show the next move with an arrow and explain it.
+ * With `auto`, the opponent's move plays itself after a short pause; without it
+ * (e.g. when stepping back with ←) it waits for Continue or →, so you can look around.
+ */
+function learnStep({ auto = false } = {}) {
+  clearTimeout(state.learnTimer);
   const d = state.drill;
   if (d.done) {
     cg.setAutoShapes([]);
@@ -115,20 +124,33 @@ function learnStep() {
     return;
   }
   const { from, to } = d.expectedSquares();
-  showNote(d.line.notes?.[d.ply] ?? null);
   if (d.playerToMove) {
+    // Keep the opponent's last move explained too, since it played itself a moment ago.
+    const prev = d.ply - 1;
+    const theirs = prev >= 0 ? { san: d.chess.history()[prev], text: d.line.notes?.[prev] } : null;
+    showNotes(theirs?.text ? theirs : null, d.line.notes?.[d.ply] ?? null);
     cg.setAutoShapes([{ orig: from, dest: to, brush: 'green' }]);
     setStatus(`Your move: play ${d.expected} (green arrow).`);
     hideAction();
+    return;
+  }
+
+  showNotes(null, d.line.notes?.[d.ply] ?? null);
+  cg.setAutoShapes([{ orig: from, dest: to, brush: 'blue' }]);
+  const playTheirMove = () => {
+    if (state.drill !== d || state.mode !== 'learn' || state.view !== 'train' || d.done || d.playerToMove) return;
+    const move = d.playOpponent();
+    state.lastMove = [move.from, move.to];
+    syncBoard();
+    learnStep({ auto: true });
+  };
+  if (auto && state.view === 'train') {
+    setStatus(`Their move: ${d.expected} (blue arrow)…`);
+    hideAction();
+    state.learnTimer = setTimeout(playTheirMove, LEARN_OPPONENT_DELAY_MS);
   } else {
-    cg.setAutoShapes([{ orig: from, dest: to, brush: 'blue' }]);
     setStatus(`Their move: ${d.expected} (blue arrow).`);
-    showAction('Continue ▶', () => {
-      const move = d.playOpponent();
-      state.lastMove = [move.from, move.to];
-      syncBoard();
-      learnStep();
-    });
+    showAction('Continue ▶', playTheirMove);
   }
 }
 
@@ -153,7 +175,7 @@ function onUserMove(orig, dest) {
   if (state.mode === 'learn') {
     if (res.ok) state.lastMove = [res.move.from, res.move.to];
     syncBoard(); // on a wrong move this snaps the piece back
-    learnStep();
+    learnStep({ auto: true });
     if (!res.ok) setStatus(`Not quite. Play ${drill.expected}, the green arrow.`, 'bad');
     return;
   }
@@ -274,8 +296,26 @@ function setStatus(text, tone = '') {
 }
 
 function showNote(text) {
-  els.note.hidden = !text;
-  els.note.textContent = text ?? '';
+  showNotes(null, text);
+}
+
+/** The explanation box: optionally the opponent's last move on top, then the current move. */
+function showNotes(theirs, text) {
+  els.note.replaceChildren();
+  if (theirs) {
+    const p = document.createElement('p');
+    p.className = 'note-theirs';
+    const san = document.createElement('strong');
+    san.textContent = `${theirs.san}: `;
+    p.append(san, theirs.text);
+    els.note.append(p);
+  }
+  if (text) {
+    const p = document.createElement('p');
+    p.textContent = text;
+    els.note.append(p);
+  }
+  els.note.hidden = !theirs && !text;
 }
 
 function showAction(label, onClick) {
