@@ -25,6 +25,7 @@ const OPPONENT_DELAY_MS = 450;
 // In Learn mode the opponent's move waits a little longer so you can see its blue arrow first.
 const LEARN_OPPONENT_DELAY_MS = 1000;
 const REP_KEY = 'opening-trainer:repertoire';
+const BOARD_KEY = 'opening-trainer:board-theme';
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -690,6 +691,22 @@ els.idFlip.addEventListener('click', () => {
   cg.set({ orientation: idState.orientation });
 });
 
+// Board color theme dropdown: the chosen theme lives on <body data-board>, and style.css recolors the board.
+function setBoardTheme(theme) {
+  document.body.dataset.board = theme;
+  try { localStorage.setItem(BOARD_KEY, theme); } catch {}
+}
+for (const link of document.querySelectorAll('.dropdown a[data-board]')) {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    setBoardTheme(link.dataset.board);
+    link.blur(); // close the menu, which stays open while it has focus
+  });
+}
+let savedTheme = null;
+try { savedTheme = localStorage.getItem(BOARD_KEY); } catch {}
+if (savedTheme) setBoardTheme(savedTheme);
+
 let saved = null;
 try { saved = localStorage.getItem(REP_KEY); } catch {}
 selectRepertoire(REPERTOIRES.some((r) => r.id === saved) ? saved : REPERTOIRES[0].id);
@@ -704,3 +721,7 @@ fetchProgress()
     else renderLineList();
   })
   .catch((err) => showProgressError(`Couldn't load saved progress (${err.message}). You can still practice.`));
+
+
+
+  

@@ -129,6 +129,60 @@ body[data-view="train"] .identify-only { display: none; }
 .tabs button + button { border-left: 1px solid var(--border); }
 .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-text); }
 
+/* Self-Coded Drop Down Bar */
+.dropdown {
+  display: inline-block;
+  position: relative;
+}
+.dropdown button {
+  background-color: var(--surface);
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dropdown a {
+  display: block;
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 12px;
+}
+
+.dropdown .content {
+  display: none;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 100%;
+  z-index: 10;
+  box-shadow: 2px 2px 5px rgb(0 0 0 / 0.15);
+}
+
+.dropdown:hover .content,
+.dropdown:focus-within .content {
+  display: block;
+}
+
+.dropdown:hover button {
+  border-color: var(--accent);
+}
+
+.dropdown a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+/* Board color themes picked from the dropdown. Brown is chessground's default, so it has no rule.
+   Each 25% tile is a 2x2 block of squares, light in the top-left like a8. */
+body[data-board="black"] cg-board {
+  background: repeating-conic-gradient(#3d3d3d 0 25%, #9a9a9a 0 50%) 0 0 / 25% 25%;
+}
+body[data-board="white"] cg-board {
+  background: repeating-conic-gradient(#c9c9c9 0 25%, #ffffff 0 50%) 0 0 / 25% 25%;
+}
+
 .id-help { margin: 0 0 12px; }
 .id-opening { font-size: 1.1rem; }
 .id-opening .muted { font-size: 0.9rem; }
@@ -191,3 +245,6 @@ button:disabled:hover { border-color: var(--border); }
 .note p { margin: 0; }
 .note p + p { margin-top: 6px; }
 .note-theirs { color: var(--muted); font-size: 0.92rem; }
+
+
+
