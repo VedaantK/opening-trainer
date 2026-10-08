@@ -3,15 +3,21 @@
 ## Which tool for which job
 I used claude for the whole project, I switched between using it in the command prompt and in VS code.
 
-## One place AI got it wrong
-    I was not reccomending good openings to add to the data base, and only added a specific few. I looked online and figured out the most popular 5 openings for both black and white and told the model to add these openings to the trainer. 
+I did the bulk of the work in command prompt, and switched to VS code to read parts of the code and to type out the prompt_log and Read Me.
 
-    Also the model had it so that I had to click next everytime it was time for the black player to move. I prompted it to stop having to do this.
+## One place AI got it wrong
+I was not reccomending good openings to add to the data base, and only added a specific few. I looked online and figured out the most popular 5 openings for both black and white and told the model to add these openings to the trainer. 
+
+Also the model had it so that I had to click next everytime it was time for the black player to move. I prompted it to stop having to do this.
+
+Finally, the AI also first made the whole project assuming that I was using Vercel. I had to tell it to change it so that I could run the secrets through Render. 
 
 ## What I wrote or changed myself
 The first things that I did myself was all the set up for the render and the Supabase. I had to make accounts for both, add the API's. I also had to run commands inside of Supabase so that the whole database and table were all set up. 
 
 I also told it to add some changes to make the whole thing more convivnet to use. I told it to use the arrow keys to go back and forth between moves. 
+
+Finally I coded the drop down that changed the colors of the board. I wrote the html and css for the dropdown itself, and then I also modified the colors to make sure that it looks and fit the themes. I did this because on Chess.com where I assume most people play there are a lot of different theme options, so I wanted to add that to this website too. 
 
 ---
 
@@ -149,3 +155,8 @@ Claude made the opponent's moves in Learn mode play themselves after a short pau
 > Also fix the typos you said in the quick fixes part. Then commit everything and push it
 
 Claude wrote `src/srs.js`, the spaced-repetition scheduler that the first version had left as a placeholder. It's a Leitner box system: passing a line moves it up a box (review in 1, 3, 7, 16, then 35 days), and failing sends it back to box 0, due right away. "Next line" now picks a line I've never played first, then the most overdue one. It added two edge-case tests, and all 59 tests pass. It also fixed the typos it had pointed out in my README and this log.
+
+**21.**
+Can you code it so that when the drop down values are changed, they actually change the color theme of the board. Can you also edit the drop down so that it matches the look of the site. 
+
+Matching the site's look: the hard-coded white, grey and black are now the site's color variables (--surface, --border, --text, --accent). That means the dropdown also switches correctly in dark mode. Hovering gives the button a green border like the other buttons, and the menu items get the same light-green tint as the selected opening chip.
