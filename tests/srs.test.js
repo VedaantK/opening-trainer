@@ -41,3 +41,20 @@ test('pickNext picks the most overdue line', () => {
   };
   assert.equal(pickNext(lines, progress, now).id, 'b');
 });
+
+test('passing in the last box stays in the last box', () => {
+  let s;
+  for (let i = 0; i < 20; i++) s = schedule(s, 'pass', now);
+  const again = schedule(s, 'pass', now);
+  assert.equal(again.box, s.box);
+  assert.equal(again.attempts, 21);
+});
+
+test('pickNext picks the line due soonest when nothing is due yet', () => {
+  const lines = [{ id: 'a' }, { id: 'b' }];
+  const progress = {
+    a: { box: 3, dueAt: '2026-10-20T00:00:00Z' },
+    b: { box: 2, dueAt: '2026-10-08T00:00:00Z' },
+  };
+  assert.equal(pickNext(lines, progress, now).id, 'b');
+});

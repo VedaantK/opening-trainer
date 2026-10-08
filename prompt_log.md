@@ -1,70 +1,151 @@
 # Prompt Log: Opening Trainer
 
-## Tools used
-| Tool / model | Used for | Why |
-|---|---|---|
-| Claude Code (Claude Opus 5.5) | Brainstorming the idea, scaffolding the project (board, drill engine, API routes, schema) | _fill in_ |
-| _…_ | _…_ | _…_ |
-
 ## Which tool for which job
-_A sentence or two, in your words._
+I used claude for the whole project, I switched between using it in the command prompt and in VS code.
 
 ## One place AI got it wrong
-_One short paragraph. Possible candidates from session 1, but use whichever really mattered to you:_
-- _While writing the repertoire files, Claude wrote move explanations that were wrong as chess, e.g. "c3 gives the c4 bishop a retreat square on c2/b3" (a bishop on c4 can't reach c2 in one move) and "pin the f3 knight" when no knight was on f3. It caught these on review; the takeaway is that the chess content needs a human check, not just the code._
-- _Claude told me `npm run dev` (frontend only, no backend) would "degrade gracefully." It didn't: Vite answered `/api/progress` with the raw JS source of the function and HTTP 200, the client treated that as success, and the line list crashed. It was only caught by driving the app in a headless browser. Fix: check the response's `content-type` is JSON, not just `res.ok` (`src/api.js`)._
-- _Claude added a `window.resize → cg.redrawAll()` handler "because chessground caches square sizes." That was wrong and caused NaN errors in the hint arrow on resize. Chessground already uses a ResizeObserver internally; removing the handler fixed it._
-- _Claude thought the Lichess explorer probably needed a token but wasn't sure; it only confirmed by curling the endpoint (HTTP 401 without one)._
+    I was not reccomending good openings to add to the data base, and only added a specific few. I looked online and figured out the most popular 5 openings for both black and white and told the model to add these openings to the trainer. 
 
-## What I wrote or substantially modified myself
-- [ ] `src/srs.js`: spaced-repetition scheduler (`schedule`, `pickNext`), checked against `tests/srs.test.js`
-- [ ] _…_
+    Also the model had it so that I had to click next everytime it was time for the black player to move. I prompted it to stop having to do this.
+
+## What I wrote or changed myself
+The first things that I did myself was all the set up for the render and the Supabase. I had to make accounts for both, add the API's. I also had to run commands inside of Supabase so that the whole database and table were all set up. 
+
+I also told it to add some changes to make the whole thing more convivnet to use. I told it to use the arrow keys to go back and forth between moves. 
 
 ---
 
-## Session 1: 2026-10-04, idea + scaffold (Claude Code, Opus 5.5)
+## Full prompt history (verbatim)
 
-**Prompt 1** (pasted the full Project 2 spec):
-> Can you suggest a project that fits these requirements [assignment text pasted]
+Every prompt below is copied exactly as I typed it, typos included. The line under each prompt is
+a short note on what came out of it.
 
-_Result: suggested a trade-journal app._
+**Tools:** Claude Code with Claude Opus 5.5, used in the terminal and in the VS Code extension.
 
-**Prompt 2**
-> Can you give me a list of 3-5 suggestoins
+### Session 1: 2026-10-04, choosing the idea and building the first version
 
-_Result: five ideas (trade journal, market-guessing game, city dashboard, CV gesture game, persona chatbot)._
+**1.**
+> How hard would it be to do make a chess opening teacher, and would it meet all the requirements of the project (Project Requirements)
 
-**Prompt 3**
-> Can you think of somehting chess related, stock like game related, stock market overall analyzer and dashboard or tracker type of thing
+A feasibility breakdown mapped against the requirements. I picked this project.
 
-_Result: seven ideas incl. Blunder Mirror, GM Exchange (players as stocks), Crash Replay._
-
-**Prompt 4**
-> How hard would it be to do make a chess opening teacher, and would it meet all the requirements of the project
-
-_Result: feasibility breakdown + requirement mapping; decided on this project._
-
-**Prompt 5**
+**2.**
 > yes set it up
 
-_Result: Claude scaffolded the project: Vite + chessground + chess.js frontend, `Drill` class, Vercel functions for the Lichess explorer proxy (with Supabase cache) and progress, Supabase schema with RLS, two repertoires (Italian as White, Caro-Kann as Black), tests. It deliberately left `src/srs.js` as a placeholder for me to implement._
+Claude built the first version: Vite + chessground + chess.js frontend, the drill engine, Vercel functions for the Lichess explorer and saved progress, the Supabase schema, two repertoires (Italian as White, Caro-Kann as Black), and tests. It left `src/srs.js` as a placeholder for me.
 
-_My notes / what I checked or changed:_
-
----
-
-**Prompt 6**
+**3.**
 > yes create the repo and push it
 
-_Result: created public repo VedaantK/opening-trainer and pushed the scaffold._
+Created the public repo VedaantK/opening-trainer and pushed it.
 
-**Prompt 7**
+**4.**
 > Once the whole thing is created I am going to add it to my wesbite so just focus on creating everything and then I can add it to the website
 
-_Result: Claude tested the app in headless Chromium (Playwright), desktop + 390px mobile, light + dark, played full lines as both colors. Found and fixed: (1) crash when the backend isn't running, (2) NaN arrow errors from an unnecessary resize handler, (3) 24px horizontal scroll on phones from chessground's coordinate labels, (4) a rejected move leaving its last-move highlight on the board. Left `src/srs.js` and README prose for me._
+Claude tested the app in a headless browser on desktop and phone sizes and fixed four bugs: a crash when the backend wasn't running, broken hint arrows after resizing, sideways scrolling on phones, and a highlight left behind after a rejected move.
 
-_My notes:_
+### Session 2: 2026-10-04 to 2026-10-07, portfolio link, deploying to Render, Learn mode
 
----
+**5.**
+> Can you add this project to my website https://github.com/VedaantK/opening-trainer.
 
-## Session 2: _date_
+Added an Opening Trainer card to my portfolio's Projects section, with only a CODE link because the app wasn't deployed yet.
+
+**6.**
+> Can you make and add the play link
+
+Claude couldn't deploy for me (no Vercel login on my machine, and it needs my own keys), so it gave me setup steps for Supabase, Lichess, and Vercel. I ended up deploying on Render instead.
+
+**7.**
+> Can you code all the implementation. I have created the API token on Render.
+>
+> https://opening-trainer-u1ow.onrender.com this is the url
+>
+> I am also getting this error can you tell me how to fix it
+>
+> ```
+> error Command "start" not found.
+> info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+> ==> Exited with status 1
+> ```
+
+The first version only worked on Vercel, and there was no `start` script for Render to run. Claude wrote `server.js`, a Node server that serves the built site and runs the existing `/api` code, and fixed `npm test`, which didn't run on newer Node. It also added the PLAY link to my portfolio and told me what Build and Start commands to use on Render.
+
+**8.**
+> Exited with status 127 while building your code.
+> Read our docs for common ways to troubleshoot your deploy.
+
+127 means a command wasn't found. Claude moved Vite out of devDependencies so it always gets installed, and told me to check that the Render service was set to Node.
+
+**9.**
+> Ok, I think the build worked is everything working?
+
+The site and board worked, but stats said `Server is missing LICHESS_TOKEN` and saved progress said `Database error`.
+
+**10.**
+> Check again
+
+Nothing had changed. Render only applies environment variables on a new deploy, so I needed to redeploy and check the Supabase tables.
+
+**11.**
+> No tables exist in my superbase
+
+Claude gave me the SQL from `supabase/schema.sql` to run in Supabase's SQL Editor.
+
+**12.**
+> Yeah, I see the tables. The tokens are in the render so I do not know why they are not working
+
+Stats worked now. Reads from the database worked but writes failed, which meant I had pasted Supabase's public anon key where the secret service_role key belonged.
+
+**13.**
+> Ok, done
+
+After I swapped the key, saving and loading progress worked on the live site.
+
+**14.**
+> Can you for the opening trainer have you first explain the line with arrows teaching the person how to play against it and then test them by having them play against the opening without arrows anymore
+
+Claude added Learn mode: an intro, then every move shown with an arrow (green for mine, blue for the opponent's) and an explanation. After that comes Test mode, with no arrows or explanations. Claude also wrote explanations for every move, including the opponent's.
+
+**16.**
+> Can you also create an opening identifier so that a person can play an opening and the model can tell a few different things, what the opening is, and what the best opening that is in the data base has accsees to, to play against it
+
+Claude added an Identify tab: it names the opening from the Lichess database, suggests the best-scoring reply with an arrow, and shows which of my trainer lines continue from the position. Testing on a phone found a real bug: switching tabs moved the board without resizing it, so taps landed on the wrong squares. The fix was to make the board re-measure itself on every switch.
+
+**17.**
+> Yes, add it to prompt log
+>
+> Can you add the following openings.
+>
+> White -
+> Ruy Lopez
+> Queens Gambit
+> Italian Game
+> London
+>
+> Black-
+> Sicilian Defense
+> Caro-Kann
+> French Defense
+> Kings Indian
+> Slav Defense
+
+Italian and Caro-Kann already existed, so Claude added the other seven with three lines each, each with an intro and an explanation for every move. It checked every line against the Lichess database, added a test that every move is legal and explained, and played all 27 lines through in a browser.
+
+**18.**
+> Can you make some quality of life changes. Make the menu bar to switch between openings a little easier and better looking. Also have the arrow keys cycle between moves
+
+Claude replaced the dropdown with a picker bar (a row of White openings and a row of Black, with the current one highlighted), and made ← → and new ◀ ▶ buttons step through moves. They're off during a test and review the line afterwards. Testing found the ◀ ▶ row still showing in Test mode because a CSS rule overrode "hidden", the same kind of bug Claude made in my portfolio's chat widget.
+
+**19.**
+
+Can you have it so that the player does not have to click next when black moves, but it automatically plays the move black was supposed to play. 
+
+Claude made the opponent's moves in Learn mode play themselves after a short pause instead of waiting for Continue, and kept their explanation on screen above mine."
+
+**20.**
+> Its fine, since these count at changes I think I made them. Write the srs.
+> *(pasted the assignment's note on authorship)*
+> Also fix the typos you said in the quick fixes part. Then commit everything and push it
+
+Claude wrote `src/srs.js`, the spaced-repetition scheduler that the first version had left as a placeholder. It's a Leitner box system: passing a line moves it up a box (review in 1, 3, 7, 16, then 35 days), and failing sends it back to box 0, due right away. "Next line" now picks a line I've never played first, then the most overdue one. It added two edge-case tests, and all 59 tests pass. It also fixed the typos it had pointed out in my README and this log.
