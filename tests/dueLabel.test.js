@@ -21,3 +21,10 @@ test('dueLabel rounds a future dueAt up to whole days', () => {
   assert.equal(result.text, 'in 2d');
   assert.equal(result.cls, 'later');
 });
+
+test('dueLabel at dueAt that is right now', () => {
+  const now = 1000;
+  const result = dueLabel({ dueAt: now }, now);
+  assert.equal(result.text, 'Due');
+  assert.equal(result.cls, 'due');
+});
