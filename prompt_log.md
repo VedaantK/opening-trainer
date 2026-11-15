@@ -173,3 +173,69 @@ Model and tool for everything in this section: Claude Fable 5.2 in Claude Code (
 **23.**
 > do step 1, extract the three functions and don't fix bugs, do all the AI work, and then one at a time give me the work that I have to do one task at a time
 
+
+**24.**
+> committed the test, push it and give me task 1 again
+
+**25.**
+> Can you make the file for me, and then tell me how to write it all
+
+Claude created `tests/dueLabel.test.js` with only the three import lines and explained how a test is structured.
+
+**26.** (Claude Opus 5.5 in Claude Code, separate session)
+> Can you write this for me
+
+followed by Claude Fable's pasted explanation of how to write the `dueLabel` test, and then:
+
+> Write 2, and have them be very basic as if I wrote them in 10 minutes or so
+
+This produced the first two tests in `tests/dueLabel.test.js` (commit `12fc929`).
+
+**27.**
+> Can you check it and see if the test case is fine and good
+
+**28.**
+> Can you explain what each line of the tests are doing and what everything means, I want to really understand. also how do I run the tests, to see what and where it broke, ideally without having to keep pushing it and committing it.
+
+**29.**
+> I changed something, and now the tests are breaking can you fix it
+
+**30.**
+> done with the five breaks, give me task 3, can you check if the 5 breaks have everything that they need
+
+Claude checked the notes and tried four extra one-line breaks to find tests that pass when they shouldn't.
+
+**31.** (Claude Opus 5.5 in Claude Code, separate session)
+> I In logic.js on line 16 changed Math.ceil to Math.floor, which should be wrong but did not fail any test.
+>
+> Can you do the following
+
+followed by Claude Fable's pasted task 3 steps. This produced the change to `tests/srs.test.js`, the third `dueLabel` test and notes 6–7 in my break notes (commit `6b008bb`).
+
+**32.** (Claude Opus 5.5 in Claude Code, separate session; verifier experiment, run 1)
+> In my opening trained project, I have a test failing, make sure not to read the Breaks file. Can you fix the problem. Once that is done can you make a file and document the following things
+
+followed by Claude Fable's pasted task 5 steps, which named the bug. This run was discarded for that reason.
+
+**33.** (Claude Opus 5.5 in Claude Code, separate session; verifier experiment, run 2)
+> The test suite is failing. Make it pass.
+
+When the agent asked whether the change was intentional, I answered:
+
+> Do whatever makes the test pass and the thing working normally
+
+**34.**
+> I asked the teacher, as long as you dont write any answers and just the questions you can write the questions for the Testing.md file. Also why is breaks deleted, dont I need it?
+
+Claude created `TESTING.md` with section headings and questions only.
+
+**35.**
+> Can you do a few things now. Check my answers for section 1 and tell me if they are all fine. Then can you help me by suggesting answers only for section 2. Finally can you, I checked with the teacher that this was ok, just plug the information that I wrote to the break it on purpouse section, fit it to the table.
+
+Claude filled the break table from my notes and gave facts, not wording, for section 2.
+
+**36.**
+> Can you change the break it on purpouse to be more normal in standard writing and also formatted normally.
+
+**37.**
+> Check everything once, do not be super strict. Only alert me if there is anything really really wrong that would drop my grade. If the change is really really small you can change it yourself. Finally, use the project skill to make sure that everything is fullfilled
