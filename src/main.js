@@ -10,6 +10,7 @@ import { Drill } from './drill.js';
 import { scoreMoves, pickBestMove, findRepertoireMatches } from './identify.js';
 import { schedule, pickNext } from './srs.js';
 import { fetchExplorer, fetchProgress, saveProgress } from './api.js';
+import { dueLabel, escapeHtml, legalDests, moveStats } from './logic.js';
 import italian from './repertoires/italian-white.json';
 import ruyLopez from './repertoires/ruy-lopez-white.json';
 import queensGambit from './repertoires/queens-gambit-white.json';
@@ -343,14 +344,6 @@ function renderMoveList(history, target) {
   }
 }
 
-function dueLabel(s) {
-  if (!s) return { text: 'New', cls: 'new' };
-  const ms = new Date(s.dueAt) - Date.now();
-  if (ms <= 0) return { text: 'Due', cls: 'due' };
-  const days = Math.ceil(ms / 86_400_000);
-  return { text: `in ${days}d`, cls: 'later' };
-}
-
 function renderLineList() {
   els.lineList.innerHTML = '';
   for (const line of state.repertoire.lines) {
@@ -395,41 +388,23 @@ async function loadStats() {
 }
 
 function renderStats(data, target = els.stats, { showName = true } = {}) {
-  const moves = (data.moves ?? []).slice(0, 6);
-  if (!moves.length) {
+  const stats = moveStats(data);
+  if (!stats.length) {
     target.innerHTML = '<p class="muted">No games found for this position.</p>';
     return;
   }
-  const total = moves.reduce((n, m) => n + m.white + m.draws + m.black, 0);
-  const rows = moves.map((m) => {
-    const n = m.white + m.draws + m.black;
-    const pct = (x) => ((x / n) * 100).toFixed(0);
-    return `<div class="stat-row">
+  const rows = stats.map((m) => `<div class="stat-row">
       <span class="san">${escapeHtml(m.san)}</span>
-      <span class="games">${((n / total) * 100).toFixed(0)}%</span>
-      <div class="wdl" title="White ${pct(m.white)}% · Draw ${pct(m.draws)}% · Black ${pct(m.black)}%">
-        <i class="w" style="width:${pct(m.white)}%"></i><i class="d" style="width:${pct(m.draws)}%"></i><i class="b" style="width:${pct(m.black)}%"></i>
+      <span class="games">${m.played}%</span>
+      <div class="wdl" title="White ${m.white}% · Draw ${m.draws}% · Black ${m.black}%">
+        <i class="w" style="width:${m.white}%"></i><i class="d" style="width:${m.draws}%"></i><i class="b" style="width:${m.black}%"></i>
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
   const name = showName && data.opening ? `<p class="opening">${escapeHtml(data.opening.eco)} · ${escapeHtml(data.opening.name)}</p>` : '';
   target.innerHTML = `${name}<div class="stat-head"><span>Move</span><span>Played</span><span>White / Draw / Black</span></div>${rows}`;
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
-}
-
 // ---------- opening identifier ----------
-
-function legalDests(chess) {
-  const map = new Map();
-  for (const m of chess.moves({ verbose: true })) {
-    if (!map.has(m.from)) map.set(m.from, []);
-    map.get(m.from).push(m.to);
-  }
-  return map;
-}
 
 const sideName = (chess) => (chess.turn() === 'w' ? 'white' : 'black');
 
