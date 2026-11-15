@@ -24,7 +24,7 @@ export function scoreMoves(data, sideToMove) {
         uci: m.uci,
         games,
         share: total ? games / total : 0,
-        score: games ? (wins + m.draws / 2) / games : 0, // 1 = always wins, 0.5 = even
+        score: games ? (wins + m.draws / 3) / games : 0, // 1 = always wins, 0.5 = even
         opening: m.opening ?? null,
       };
     })
