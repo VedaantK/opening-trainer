@@ -160,3 +160,16 @@ Claude wrote `src/srs.js`, the spaced-repetition scheduler that the first versio
 Can you code it so that when the drop down values are changed, they actually change the color theme of the board. Can you also edit the drop down so that it matches the look of the site. 
 
 Matching the site's look: the hard-coded white, grey and black are now the site's color variables (--surface, --border, --text, --accent). That means the dropdown also switches correctly in dark mode. Hovering gives the button a green border like the other buttons, and the menu items get the same light-green tint as the selected opening chip.
+
+---
+
+## HW9: Tests as Guardrails
+
+Model and tool for everything in this section: Claude Fable 5.2 in Claude Code (CLI).
+
+**22.**
+> Can you look at the this homework assignment, https://www.cs.cmu.edu/~113/hw9.html, and figure out which project of mine is the best for this project, I would think it is the chess project of number two but look at all of them and see what fits. Then once you have identified the project tell me what the next steps are and if I write the tests myself or AI writes them
+
+**23.**
+> do step 1, extract the three functions and don't fix bugs, do all the AI work, and then one at a time give me the work that I have to do one task at a time
+
