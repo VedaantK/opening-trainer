@@ -13,3 +13,11 @@ test('dueLabel says Due when dueAt is in the past', () => {
   assert.equal(result.text, 'Due');
   assert.equal(result.cls, 'due');
 });
+
+test('dueLabel rounds a future dueAt up to whole days', () => {
+  const DAY_MS = 86_400_000;
+  // 1.5 days from now: ceil gives 2, floor would give 1.
+  const result = dueLabel({ dueAt: 1000 + 1.5 * DAY_MS }, 1000);
+  assert.equal(result.text, 'in 2d');
+  assert.equal(result.cls, 'later');
+});

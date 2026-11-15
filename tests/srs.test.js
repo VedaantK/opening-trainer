@@ -10,7 +10,7 @@ const days = (iso) => Math.round((new Date(iso) - now) / 86_400_000);
 test('first pass moves a new line out of box 0', () => {
   const s = schedule(undefined, 'pass', now);
   assert.equal(s.box, 1);
-  assert.ok(days(s.dueAt) >= 1);
+  assert.equal(days(s.dueAt), 1);
   assert.equal(s.attempts, 1);
   assert.equal(s.correct, 1);
 });
